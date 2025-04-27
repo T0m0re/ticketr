@@ -5,9 +5,10 @@ import { Id } from "@/convex/_generated/dataModel"
 import { useStorageUrl } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs"
 import { useQuery } from "convex/react";
-import { MapPin, StarIcon } from "lucide-react";
+import { Calendar, Check, CircleArrowRight, LoaderCircle, MapPin, PencilIcon, StarIcon, Ticket, XCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import PurchaseTicket from "./PurchaseTicket";
 
 
 function EventCard({eventId}: {eventId: Id<"events">}) {
@@ -33,8 +34,111 @@ function EventCard({eventId}: {eventId: Id<"events">}) {
     }
 
     const isPastEvent = event.eventDate < Date.now();
-    const isEventOwner = user?.id === event?.userId
+    const isEventOwner = user?.id === event?.userId;
+    
+    const renderQueuePosition = () => {
+      if(!queuePosition || queuePosition.status !== "waiting") return null;
 
+      if(availability.purchasedCount >= availability.totalTickets){
+        return(
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center">
+              <Ticket className="w-5 h-5 text-gray-400 mr-2"/>
+              <span className="text-gray-600">Event is sold out</span>
+            </div>
+          </div>
+        )
+      }
+
+      if(queuePosition.position === 2){
+        return(
+          <div className="flex flex-col lg:flex-row items-center justify-between p-3 bg-amber-50 rounded-lg border border-amber-100">
+            <div className="flex items-center">
+              <CircleArrowRight className="w-5 h-5 text-amber-600 mr-2"/>
+              <span className="text-amber-800 font-medium">
+                You&apos;re next in line! (Queue position: {""})
+                {queuePosition.position}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <LoaderCircle className="w-4 h-4 animate-spin text-amber-500"/>
+              <span className="text-amber-600 text-sm">Waiting for ticket</span>
+            </div>
+          </div>
+        )
+      }
+
+      return(
+        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="flex items-center">
+            <LoaderCircle className="w-4 h-4 animate-spin text-blue-500"/>
+            <span className="text-blue-700">Queue position</span>
+          </div>
+          <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
+            #{queuePosition.position}
+          </span>
+        </div>
+      )
+
+    }
+
+
+    const renderTicketStatus = () => {
+      if (!user) return null;
+
+      if (isEventOwner){
+        return(
+          <div className="mt-4">
+            <button onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/seller/events/${eventId}/edit`);
+              }} className="w-full bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg:gray-200 transition-color duration-200 shadow-sm flex items-center justify-center gap-2">
+              <PencilIcon className="w-5 h-5"/>
+              Edit Event
+            </button>
+          </div>
+        )
+      };
+
+      if(userTicket){
+        return(
+          <div className="mt-4 flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100">
+            <div className="flex items-center">
+              <Check className="w-5 h-5 text-green-600 mr-2"/>
+              <span className="font-medium text-green-800">You have a ticket!</span>
+            </div>
+            <button 
+            onClick={() => router.push(`/tickets/${userTicket._id}`)}
+            className="text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-full font-medium shadow-sm transition-colors duration-200 flex items-center gap-1">
+              View your ticket
+            </button>
+
+          </div>
+        )
+      }
+
+      if(queuePosition){
+        return(
+          <div className="mt-4">
+            {queuePosition.status === "offered" && (
+              <PurchaseTicket eventId={eventId}/>
+            )}
+
+            {renderQueuePosition()}
+            {queuePosition.status === "expired" && (
+              <div className="p-3 bg-red-50 rounded-lg border border-red-100">
+                <span className="text-red-700 font-medium flex items-center">
+                  <XCircle className="w-5 h-5 mr-2"/>
+                  Offer expired
+                </span>
+              </div>
+            )}
+          </div>
+        )
+      }
+
+      return null
+    }
   return (
     <div onClick={() => router.push(`/event/${eventId}`)} className={`bg-white shadow-sm hover:shadow-lg transition-all duration-300 border-gray-100 relative rounded-xl overflow-hidden cursor-pointer ${isPastEvent? "opacity-75 hover:opacity-100" : ""}`}>
       {/* Event Image */}
@@ -91,8 +195,36 @@ function EventCard({eventId}: {eventId: Id<"events">}) {
             <MapPin className="w-4 h-4 mr-2"/>
             <span>{event.location}</span>
           </div>
+          <div className="flex items-center text-gray-600">
+            <Calendar className="w-4 h-4 mr-2"/>
+            <span>
+              {new Date(event.eventDate).toLocaleString()}{""}
+              {isPastEvent && "(Ended)"}
+            </span>
+          </div>
+
+          <div className="flex items-center text-gray-600">
+            <Ticket className="w-4 h-4 mr-2"/>
+            <span>
+              {availability.totalTickets - availability.purchasedCount} / {""}
+              {availability.totalTickets} available
+              {isPastEvent && availability.activeOffers > 0 && (
+                <span className="text-amber-600 text-sm ml-2">
+                  {availability.activeOffers} {""}
+                  {availability.activeOffers == 1 ? "person": "people"} trying to buy
+                </span>
+              )}
+            </span>
+          </div>
         </div>
         
+        <p className="mt-4 text-gray-600 text-sm-line-clamp-2">
+          {event.description}
+        </p>
+
+        <div onClick={(e) => e.stopPropagation()}>
+          {!isPastEvent && renderTicketStatus()}
+        </div>
       </div>
     </div>
   )
