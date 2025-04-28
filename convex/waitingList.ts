@@ -44,6 +44,30 @@ export const getQueuePosition = query({
     }
 })
 
+/**
+    * Internal mutation to expire a single offer and process the queue
+    * Called by scheduled job when offer timer expires
+ */
+
+export const expireOffer = internalMutation({
+    args:{
+        waitingListId: v.id("waitingList"),
+        eventId: v.id("events"),
+    },
+    handler: async (ctx, {waitingListId, eventId}) => {
+        const offer = await ctx.db.get(waitingListId);
+        // It oofer is not found or is not in OFFERD status, do nothing
+        if(!offer || offer.status !== WAITING_LIST_STATUS.OFFERED) return;
+
+        await ctx.db.patch(waitingListId, {
+            status: WAITING_LIST_STATUS.EXPIRED,
+        })
+
+        // Process queue to offer ticket to next person
+        await processQueue(ctx, {eventId});
+    }
+})
+
 export const releaseTicket = mutation({
     args:{
         eventId: v.id("events"),

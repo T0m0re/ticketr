@@ -1,7 +1,8 @@
 
 import { mutation, query } from "./_generated/server";
 import {  v } from "convex/values";
-import { TICKET_STATUS, WAITING_LIST_STATUS } from "./constants";
+import { DURATIONS, TICKET_STATUS, WAITING_LIST_STATUS } from "./constants";
+import { internal } from "./_generated/api";
 
 export const get = query({
     args: {},
@@ -118,7 +119,7 @@ export const joinWaitingList = mutation({
 
     args:{eventId: v.id("events"), userId: v.string()},
 
-    handler: async (ctx, {eventId, UserId}) => {
+    handler: async (ctx, {eventId, userId}) => {
         // Rate Limit Check
         // const status = await rateLimiter.limit(ctx, "queueJoin", {key: userId});
         // if(!status.ok){
@@ -149,6 +150,26 @@ export const joinWaitingList = mutation({
             const {available} = await checkAvailability(ctx, {eventId});
 
             const now = Date.now()
+
+            if(available){
+                // If tickets are available, create an offer entry
+                const waitingListId = await ctx.db.insert("waitingList",{
+                    eventId,
+                    userId,
+                    status: WAITING_LIST_STATUS.OFFERED,
+                    offerExpiresAt: now + DURATIONS.TICKET_OFFER,
+                });
+
+                // Schedule a job to expire this offer after the offer duration
+                await ctx.scheduler.runAfter(
+                    DURATIONS.TICKET_OFFER,
+                    internal.waitingList.expireOffer,
+                    {
+                        waitingListId,
+                        eventId
+                    }
+                )
+            }
 
     }
 })
