@@ -14,7 +14,7 @@ function JoinQueue({
     userId
 }:{
     eventId: Id<"events">, 
-    userId: Id<"users">;
+    userId: string;
 }) {
     const {toast} = useToast()
     const joinWaitingList = useMutation(api.events.joinWaitingList)
@@ -64,7 +64,7 @@ function JoinQueue({
         return <Spinner/>
     }
 
-    if (!userTicket){
+    if (userTicket){
         return null
     }
 
@@ -83,8 +83,7 @@ function JoinQueue({
                             <OctagonXIcon className="w-5 h-5"/>
                             <span>You cannot buy a ticket for your own event</span>
                         </div>
-                    ): (
-                        isPastEvent ? (
+                    ): isPastEvent ? (
                             <div className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg">
                                 <Clock className="w-5 h-5"/>
                                 <span>Event has passed</span>
@@ -104,7 +103,6 @@ function JoinQueue({
                                 Buy Ticket
                             </button>
                         )
-                    )
                 }
                     </>
             )

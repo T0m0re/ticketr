@@ -173,9 +173,8 @@ function EventCard({eventId}: {eventId: Id<"events">}) {
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Past Event</span>
             )}
           </div>
-        </div>
 
-        {/* Price Tag */}
+           {/* Price Tag */}
         <div className="flex flex-col items-end gap-2 ml-4">
           <span className={`px-4 py-1.5 font-semibold rounded-full ${isPastEvent ? "bg-gray-50 text-gray-500": "bg-green-50 text-green-700"}`}>
             ${event.price.toFixed(2)}
@@ -187,6 +186,9 @@ function EventCard({eventId}: {eventId: Id<"events">}) {
             </span>
           )}
         </div>
+        </div>
+
+       
 
         {/* Event Details */}
 
@@ -208,7 +210,7 @@ function EventCard({eventId}: {eventId: Id<"events">}) {
             <span>
               {availability.totalTickets - availability.purchasedCount} / {""}
               {availability.totalTickets} available
-              {isPastEvent && availability.activeOffers > 0 && (
+              {!isPastEvent && availability.activeOffers > 0 && (
                 <span className="text-amber-600 text-sm ml-2">
                   {availability.activeOffers} {""}
                   {availability.activeOffers == 1 ? "person": "people"} trying to buy

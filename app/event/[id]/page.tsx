@@ -1,6 +1,7 @@
 "use client"
 
 import EventCard from "@/components/EventCard"
+import JoinQueue from "@/components/JoinQueue"
 import Spinner from "@/components/Spinner"
 import { Button } from "@/components/ui/button"
 import { api } from "@/convex/_generated/api"
