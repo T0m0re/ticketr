@@ -24,7 +24,7 @@ function EventPage() {
         eventId: params.id as Id<"events">,
     })
     const imageUrl = useStorageUrl(event?.imageStorageId)
-
+    
     if(!event || !availability) {
         return(
             <div className="min-h-screen flex items-center justify-center">
@@ -32,6 +32,8 @@ function EventPage() {
             </div>
         )
     }
+
+
   return (
     <div className="min-h-screen bg-gray-50">
         {/* Event Details */}
@@ -39,15 +41,15 @@ function EventPage() {
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 {/* Event Image */}
                 {imageUrl && (
-                    <div className="aspect=[21/9] relative w-full">
-                        <Image
-                            src={imageUrl}
-                            alt={event.name}
-                            fill
-                            className="object-cover"
-                            priority
-                        />
-                    </div>
+                       <div className="aspect-[21/9] relative w-full">
+                       <Image
+                         src={imageUrl}
+                         alt={event.name}
+                         fill
+                         className="object-cover"
+                         priority
+                       />
+                     </div>
                 )}
 
                 {/* Event Info */}
