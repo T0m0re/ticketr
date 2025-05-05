@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
       {
         hostname: "usable-badger-620.convex.cloud",
         protocol: 'https'
+      },
+      {
+        hostname: "hip-caiman-617.convex.cloud",
+        protocol: 'https'
       }
     ]
   }
