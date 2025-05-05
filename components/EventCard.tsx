@@ -56,8 +56,8 @@ function EventCard({eventId}: {eventId: Id<"events">}) {
             <div className="flex items-center">
               <CircleArrowRight className="w-5 h-5 text-amber-600 mr-2"/>
               <span className="text-amber-800 font-medium">
-                You&apos;re next in line! (Queue position: {""})
-                {queuePosition.position}
+                You&apos;re next in line! (Queue position: {""}
+                {queuePosition.position})
               </span>
             </div>
             <div className="flex items-center">
